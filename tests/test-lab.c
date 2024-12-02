@@ -132,6 +132,28 @@ void test_buddy_init(void)
   }
 }
 
+/**
+ * Tests reallocating a block to a smaller and larger size.
+ */
+void test_buddy_realloc(void)
+{
+  fprintf(stderr, "->Testing buddy realloc\n");
+  struct buddy_pool pool;
+  size_t size = UINT64_C(1) << MIN_K;
+  buddy_init(&pool, size);
+
+  void *mem = buddy_malloc(&pool, 1);
+  assert(mem != NULL);
+
+  void *new_mem = buddy_realloc(&pool, mem, 2 * (UINT64_C(1) << SMALLEST_K));
+  assert(new_mem != NULL);
+  assert(new_mem != mem);
+
+  buddy_free(&pool, new_mem);
+  check_buddy_pool_full(&pool);
+  buddy_destroy(&pool);
+}
+
 int main(void)
 {
   time_t t;
@@ -144,6 +166,6 @@ int main(void)
   RUN_TEST(test_buddy_init);
   RUN_TEST(test_buddy_malloc_one_byte);
   RUN_TEST(test_buddy_malloc_one_large);
-
+  RUN_TEST(test_buddy_realloc);
   return UNITY_END();
 }
